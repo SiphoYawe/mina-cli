@@ -2,7 +2,8 @@
 
 Terminal-based cross-chain bridge to Hyperliquid. Bridge assets from any chain directly from your command line.
 
-[![npm version](https://badge.fury.io/js/@siphoyawe%2Fmina-cli.svg)](https://www.npmjs.com/package/@siphoyawe/mina-cli)
+[![npm version](https://img.shields.io/npm/v/@siphoyawe/mina-cli.svg)](https://www.npmjs.com/package/@siphoyawe/mina-cli)
+[![npm downloads](https://img.shields.io/npm/dm/@siphoyawe/mina-cli.svg)](https://www.npmjs.com/package/@siphoyawe/mina-cli)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
