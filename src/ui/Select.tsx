@@ -1,7 +1,7 @@
 import React from 'react'
 import { Box, Text } from 'ink'
 import InkSelectInput from 'ink-select-input'
-import { theme, symbols } from './theme.js'
+import { theme, symbols, borders } from './theme.js'
 
 // Define InkItem type to match ink-select-input's expected format
 interface InkItem<V> {
@@ -36,7 +36,7 @@ export interface SelectProps<V = string> {
 
 /**
  * Styled chain/token selector component
- * Wraps ink-select-input with Dark Luxe theme
+ * Enhanced with refined visual design
  */
 export function Select<V = string>({
   items,
@@ -64,31 +64,40 @@ export function Select<V = string>({
     onHighlight?.(item.value)
   }
 
-  // Custom item component for theming
+  // Custom item component for enhanced theming
   const itemComponent = ({ isSelected, label }: { isSelected?: boolean; label: string }) => {
     const item = items.find(i => i.label === label)
     const isDisabled = item?.disabled
 
     return (
       <Box>
-        <Text color={isSelected ? theme.primary : isDisabled ? theme.muted : theme.secondary}>
-          {isSelected ? symbols.arrow : ' '} {label}
+        {/* Selection indicator with visual enhancement */}
+        <Text color={isSelected ? theme.primary : theme.border}>
+          {isSelected ? symbols.pointerFilled : ' '}
         </Text>
+        <Text> </Text>
+        {/* Main label with highlight effect */}
+        <Text
+          color={isSelected ? theme.primary : isDisabled ? theme.muted : theme.secondary}
+          bold={isSelected}
+        >
+          {label}
+        </Text>
+        {/* Description with separator */}
         {item?.description && (
-          <Text color={theme.muted} dimColor>
-            {' '}— {item.description}
-          </Text>
+          <>
+            <Text color={theme.border}> {symbols.dash} </Text>
+            <Text color={theme.muted} dimColor>
+              {item.description}
+            </Text>
+          </>
         )}
       </Box>
     )
   }
 
-  // Custom indicator component
-  const indicatorComponent = ({ isSelected }: { isSelected?: boolean }) => (
-    <Text color={theme.primary}>
-      {isSelected ? symbols.arrow : ' '}
-    </Text>
-  )
+  // Custom indicator component - hidden since we handle it in itemComponent
+  const indicatorComponent = () => <Text> </Text>
 
   if (disabled) {
     return (
@@ -98,9 +107,11 @@ export function Select<V = string>({
             {label}
           </Text>
         )}
-        <Text color={theme.muted} dimColor>
-          (disabled)
-        </Text>
+        <Box>
+          <Text color={theme.muted} dimColor>
+            {symbols.circleEmpty} (disabled)
+          </Text>
+        </Box>
       </Box>
     )
   }
@@ -109,7 +120,8 @@ export function Select<V = string>({
     <Box flexDirection="column">
       {label && (
         <Box marginBottom={1}>
-          <Text color={theme.secondary}>{label}</Text>
+          <Text color={theme.borderLight}>{borders.vertical}</Text>
+          <Text color={theme.secondary}> {label}</Text>
         </Box>
       )}
       <InkSelectInput

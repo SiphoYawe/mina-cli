@@ -1,7 +1,7 @@
 import React from 'react'
 import { Box, Text } from 'ink'
 import InkSpinner from 'ink-spinner'
-import { theme, symbols } from './theme.js'
+import { theme, symbols, borders } from './theme.js'
 
 export type StepStatus = 'pending' | 'active' | 'completed' | 'failed'
 
@@ -29,21 +29,22 @@ export interface ProgressStepsProps {
 
 /**
  * Get the status indicator for a step
+ * Enhanced with more distinctive visual states
  */
 function getStatusIndicator(status: StepStatus): React.ReactNode {
   switch (status) {
     case 'pending':
-      return <Text color={theme.muted}>{symbols.pending}</Text>
+      return <Text color={theme.muted}>{symbols.circleEmpty}</Text>
     case 'active':
       return (
-        <Text color={theme.primary}>
+        <Text color={theme.highlight}>
           <InkSpinner type="dots" />
         </Text>
       )
     case 'completed':
-      return <Text color={theme.success}>{symbols.completed}</Text>
+      return <Text color={theme.success}>{symbols.checkCircle}</Text>
     case 'failed':
-      return <Text color={theme.error}>{symbols.failed}</Text>
+      return <Text color={theme.error}>{symbols.cross}</Text>
   }
 }
 
@@ -55,7 +56,7 @@ function getStatusColor(status: StepStatus): string {
     case 'pending':
       return theme.muted
     case 'active':
-      return theme.primary
+      return theme.highlight
     case 'completed':
       return theme.success
     case 'failed':
@@ -64,7 +65,21 @@ function getStatusColor(status: StepStatus): string {
 }
 
 /**
+ * Get connector style based on step status
+ */
+function getConnectorStyle(currentStatus: StepStatus, nextStatus: StepStatus): { char: string; color: string } {
+  if (currentStatus === 'completed') {
+    return { char: borders.vertical, color: theme.success }
+  }
+  if (currentStatus === 'active') {
+    return { char: borders.vertical, color: theme.highlight }
+  }
+  return { char: borders.vertical, color: theme.border }
+}
+
+/**
  * Single step component
+ * Enhanced with better visual hierarchy
  */
 function StepItem({
   step,
@@ -72,14 +87,17 @@ function StepItem({
   showNumber,
   showTimestamp,
   isLast,
+  nextStep,
 }: {
   step: Step
   index: number
   showNumber: boolean
   showTimestamp: boolean
   isLast: boolean
+  nextStep?: Step
 }) {
   const color = getStatusColor(step.status)
+  const connector = !isLast ? getConnectorStyle(step.status, nextStep?.status || 'pending') : null
 
   return (
     <Box flexDirection="column">
@@ -91,7 +109,7 @@ function StepItem({
         {showNumber && (
           <Box width={4}>
             <Text color={color} dimColor={step.status === 'pending'}>
-              {index + 1}.
+              {String(index + 1).padStart(2, '0')}
             </Text>
           </Box>
         )}
@@ -107,6 +125,15 @@ function StepItem({
           </Text>
         </Box>
 
+        {/* Status badge for active/completed */}
+        {step.status === 'active' && (
+          <Box marginLeft={1}>
+            <Text color={theme.highlight}>[</Text>
+            <Text color={theme.highlight}>processing</Text>
+            <Text color={theme.highlight}>]</Text>
+          </Box>
+        )}
+
         {/* Timestamp (optional) */}
         {showTimestamp && step.timestamp && (
           <Box marginLeft={2}>
@@ -117,19 +144,19 @@ function StepItem({
         )}
       </Box>
 
-      {/* Description */}
+      {/* Description with indentation */}
       {step.description && (
         <Box marginLeft={showNumber ? 7 : 3}>
-          <Text color={theme.muted} dimColor>
-            {step.description}
+          <Text color={step.status === 'failed' ? theme.error : theme.muted} dimColor={step.status !== 'failed'}>
+            {symbols.pointer} {step.description}
           </Text>
         </Box>
       )}
 
       {/* Connector line (not for last item) */}
-      {!isLast && step.status !== 'pending' && (
+      {connector && (
         <Box marginLeft={1}>
-          <Text color={theme.border}>│</Text>
+          <Text color={connector.color}>{connector.char}</Text>
         </Box>
       )}
     </Box>
@@ -138,11 +165,12 @@ function StepItem({
 
 /**
  * Bridge progress steps component with status indicators
+ * Enhanced with visual timeline effect
  *
  * Status indicators:
- * - Pending: ○
- * - Active: → (with spinner)
- * - Completed: ✓ (green)
+ * - Pending: ○ (empty circle)
+ * - Active: ◆ (with spinner)
+ * - Completed: ◉ (filled circle, green)
  * - Failed: ✗ (red)
  */
 export function ProgressSteps({
@@ -155,9 +183,8 @@ export function ProgressSteps({
     <Box flexDirection="column">
       {title && (
         <Box marginBottom={1}>
-          <Text color={theme.secondary} bold>
-            {title}
-          </Text>
+          <Text color={theme.borderLight}>{borders.vertical}</Text>
+          <Text color={theme.secondary} bold> {title}</Text>
         </Box>
       )}
       {steps.map((step, index) => (
@@ -168,6 +195,7 @@ export function ProgressSteps({
           showNumber={showNumbers}
           showTimestamp={showTimestamps}
           isLast={index === steps.length - 1}
+          nextStep={steps[index + 1]}
         />
       ))}
     </Box>

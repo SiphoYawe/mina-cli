@@ -1,7 +1,8 @@
 /**
  * Mina Bridge CLI UI Components
  *
- * Dark Luxe themed terminal components built with Ink
+ * Refined terminal components built with Ink
+ * Featuring a luxurious dark theme with cyber aesthetics
  */
 
 // Theme and constants
@@ -9,7 +10,9 @@ export {
   theme,
   borders,
   symbols,
+  decorations,
   MINA_LOGO,
+  MINA_LOGO_LARGE,
   TAGLINE,
   type ThemeColor,
 } from './theme.js'
@@ -18,6 +21,7 @@ export {
 export {
   Box,
   Divider,
+  SectionBreak,
   type BoxProps,
   type DividerProps,
 } from './Box.js'
@@ -26,6 +30,7 @@ export {
 export {
   Header,
   Subheader,
+  SectionDivider,
   type HeaderProps,
   type SubheaderProps,
 } from './Header.js'

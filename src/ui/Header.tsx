@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box, Text } from 'ink'
-import { theme, MINA_LOGO, TAGLINE } from './theme.js'
+import { theme, MINA_LOGO, MINA_LOGO_LARGE, TAGLINE, symbols, borders } from './theme.js'
 
 export interface HeaderProps {
   /** Whether to show the tagline */
@@ -9,24 +9,30 @@ export interface HeaderProps {
   tagline?: string
   /** Whether to show a compact version */
   compact?: boolean
+  /** Use large logo variant */
+  large?: boolean
 }
 
 /**
- * ASCII art Mina logo header component
+ * Elegant ASCII art Mina logo header component
+ * Features proper centering and refined typography
  */
 export function Header({
   showTagline = true,
   tagline = TAGLINE,
-  compact = false
+  compact = false,
+  large = false
 }: HeaderProps) {
   if (compact) {
     return (
       <Box flexDirection="column" marginBottom={1}>
-        <Text color={theme.primary} bold>
-          MINA
-        </Text>
+        <Box>
+          <Text color={theme.accent}>{symbols.diamond}</Text>
+          <Text color={theme.primary} bold> MINA </Text>
+          <Text color={theme.accent}>{symbols.diamond}</Text>
+        </Box>
         {showTagline && (
-          <Text color={theme.secondary} dimColor>
+          <Text color={theme.muted}>
             {tagline}
           </Text>
         )}
@@ -34,16 +40,31 @@ export function Header({
     )
   }
 
+  const logo = large ? MINA_LOGO_LARGE : MINA_LOGO
+
   return (
     <Box flexDirection="column" marginBottom={1}>
-      <Text color={theme.primary} bold>
-        {MINA_LOGO}
-      </Text>
-      {showTagline && (
-        <Box justifyContent="center">
-          <Text color={theme.secondary} dimColor>
-            {tagline}
+      {/* Logo with gradient-like effect */}
+      <Box flexDirection="column">
+        {logo.split('\n').filter(line => line.length > 0).map((line, index, arr) => (
+          <Text
+            key={index}
+            color={index === 0 ? theme.primary : index === arr.length - 1 ? theme.accent : theme.primaryDim}
+            bold
+          >
+            {line}
           </Text>
+        ))}
+      </Box>
+
+      {/* Tagline with decorative elements - properly aligned */}
+      {showTagline && (
+        <Box flexDirection="column" marginTop={1}>
+          <Box>
+            <Text color={theme.border}>{borders.roundTopLeft}{borders.heavyHorizontal}</Text>
+            <Text color={theme.muted}> {tagline} </Text>
+            <Text color={theme.border}>{borders.heavyHorizontal}{borders.roundTopRight}</Text>
+          </Box>
         </Box>
       )}
     </Box>
@@ -59,13 +80,36 @@ export interface SubheaderProps {
 
 /**
  * Subheader component for section titles
+ * Enhanced with decorative elements
  */
 export function Subheader({ text, icon }: SubheaderProps) {
   return (
     <Box marginY={1}>
+      <Text color={theme.borderLight}>{borders.vertical}</Text>
       <Text color={theme.primary} bold>
-        {icon && `${icon} `}{text}
+        {icon ? ` ${icon} ` : ' '}{text}
       </Text>
+    </Box>
+  )
+}
+
+/**
+ * Section divider with optional label
+ */
+export function SectionDivider({ label }: { label?: string }) {
+  if (label) {
+    return (
+      <Box marginY={1}>
+        <Text color={theme.border}>{borders.heavyHorizontal.repeat(3)} </Text>
+        <Text color={theme.muted}>{label}</Text>
+        <Text color={theme.border}> {borders.heavyHorizontal.repeat(20)}</Text>
+      </Box>
+    )
+  }
+
+  return (
+    <Box marginY={1}>
+      <Text color={theme.border}>{borders.heavyHorizontal.repeat(40)}</Text>
     </Box>
   )
 }

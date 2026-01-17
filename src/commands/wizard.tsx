@@ -71,28 +71,79 @@ const initialState: WizardState = {
 
 /**
  * Navigation hints component
+ * Enhanced with visual key indicators
  */
 function NavigationHints({ step }: { step: WizardStep }) {
-  const hints: Record<WizardStep, string> = {
-    chain: 'up/down Select  Enter Confirm  q Quit',
-    token: 'up/down Select  Enter Confirm  b Back  q Quit',
-    amount: 'Enter Confirm  b Back  q Quit',
-    key: 'Enter Confirm  b Back  q Quit',
-    confirm: 'Enter Execute  b Back  q Quit',
-    execute: 'Please wait...',
+  // Key styling helper
+  const Key = ({ children }: { children: string }) => (
+    <Text color={theme.borderLight}>[</Text>
+  )
+
+  const renderHint = (key: string, action: string, isLast = false) => (
+    <>
+      <Text color={theme.secondary}>{key}</Text>
+      <Text color={theme.muted}> {action}</Text>
+      {!isLast && <Text color={theme.border}>  {symbols.dot}  </Text>}
+    </>
+  )
+
+  const hints: Record<WizardStep, React.ReactNode> = {
+    chain: (
+      <>
+        {renderHint('↑↓', 'Navigate')}
+        {renderHint('Enter', 'Select')}
+        {renderHint('q', 'Quit', true)}
+      </>
+    ),
+    token: (
+      <>
+        {renderHint('↑↓', 'Navigate')}
+        {renderHint('Enter', 'Select')}
+        {renderHint('b', 'Back')}
+        {renderHint('q', 'Quit', true)}
+      </>
+    ),
+    amount: (
+      <>
+        {renderHint('0-9', 'Type amount')}
+        {renderHint('Enter', 'Confirm')}
+        {renderHint('b', 'Back')}
+        {renderHint('q', 'Quit', true)}
+      </>
+    ),
+    key: (
+      <>
+        {renderHint('Paste', 'Private key')}
+        {renderHint('Enter', 'Confirm')}
+        {renderHint('b', 'Back')}
+        {renderHint('q', 'Quit', true)}
+      </>
+    ),
+    confirm: (
+      <>
+        {renderHint('Enter', 'Execute bridge')}
+        {renderHint('b', 'Back')}
+        {renderHint('q', 'Quit', true)}
+      </>
+    ),
+    execute: (
+      <Text color={theme.muted}>
+        <Text color={theme.primary}>{symbols.active}</Text> Processing transaction...
+      </Text>
+    ),
   }
 
   return (
-    <Box marginTop={1}>
-      <Text color={theme.muted} dimColor>
-        {hints[step]}
-      </Text>
+    <Box marginTop={1} paddingTop={1} borderStyle="single" borderTop borderBottom={false} borderLeft={false} borderRight={false} borderColor={theme.border}>
+      <Text color={theme.muted}>{symbols.pointer} </Text>
+      {hints[step]}
     </Box>
   )
 }
 
 /**
  * Step indicator component showing current position in wizard
+ * Enhanced with visual progress bar effect
  */
 function StepIndicator({ currentStep }: { currentStep: WizardStep }) {
   const steps: WizardStep[] = ['chain', 'token', 'amount', 'key', 'confirm', 'execute']
@@ -108,25 +159,56 @@ function StepIndicator({ currentStep }: { currentStep: WizardStep }) {
   const currentIndex = steps.indexOf(currentStep)
 
   return (
-    <Box marginBottom={1}>
-      {steps.map((step, index) => {
-        const isActive = index === currentIndex
-        const isCompleted = index < currentIndex
-        const separator = index < steps.length - 1 ? ' > ' : ''
+    <Box flexDirection="column" marginBottom={1}>
+      {/* Progress bar */}
+      <Box marginBottom={1}>
+        {steps.map((step, index) => {
+          const isActive = index === currentIndex
+          const isCompleted = index < currentIndex
+          const isLast = index === steps.length - 1
 
-        return (
-          <Text key={step}>
+          return (
+            <React.Fragment key={step}>
+              {/* Step indicator */}
+              <Text
+                color={isCompleted ? theme.success : isActive ? theme.primary : theme.muted}
+                bold={isActive}
+              >
+                {isCompleted ? symbols.checkCircle : isActive ? symbols.diamondFilled : symbols.circleEmpty}
+              </Text>
+              {/* Connector line */}
+              {!isLast && (
+                <Text color={isCompleted ? theme.success : theme.border}>
+                  {isCompleted ? '━━' : '──'}
+                </Text>
+              )}
+            </React.Fragment>
+          )
+        })}
+      </Box>
+
+      {/* Step labels */}
+      <Box>
+        {steps.map((step, index) => {
+          const isActive = index === currentIndex
+          const isCompleted = index < currentIndex
+          const isLast = index === steps.length - 1
+          const label = stepLabels[step]
+          // Pad label to align with progress indicators (3 chars for indicator + 2 for connector = 5 total per step)
+          const paddedLabel = label.padEnd(isLast ? label.length : 5, ' ')
+
+          return (
             <Text
+              key={step}
               color={isActive ? theme.primary : isCompleted ? theme.success : theme.muted}
               bold={isActive}
               dimColor={!isActive && !isCompleted}
             >
-              {isCompleted ? symbols.check : isActive ? symbols.arrow : symbols.pending} {stepLabels[step]}
+              {paddedLabel.slice(0, isLast ? undefined : 5)}
             </Text>
-            <Text color={theme.muted} dimColor>{separator}</Text>
-          </Text>
-        )
-      })}
+          )
+        })}
+      </Box>
     </Box>
   )
 }
