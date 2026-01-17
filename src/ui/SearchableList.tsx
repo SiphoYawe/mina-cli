@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Box, Text, useInput, useStdin } from 'ink'
 import { theme, symbols, borders } from './theme.js'
 
@@ -67,44 +67,42 @@ function sortItems(items: ListItem[], popularIds: (string | number)[]): ListItem
  */
 function KeyboardHandler({
   searchable,
-  displayedItemsLength,
+  totalItemsLength,
   selectedIndex,
   setSelectedIndex,
   setQuery,
-  setShowAll,
-  hasMore,
+  setViewportStart,
   onSelect,
-  displayedItems,
+  filteredItems,
 }: {
   searchable: boolean
-  displayedItemsLength: number
+  totalItemsLength: number
   selectedIndex: number
   setSelectedIndex: React.Dispatch<React.SetStateAction<number>>
   setQuery: React.Dispatch<React.SetStateAction<string>>
-  setShowAll: React.Dispatch<React.SetStateAction<boolean>>
-  hasMore: boolean
+  setViewportStart: React.Dispatch<React.SetStateAction<number>>
   onSelect?: (item: ListItem) => void
-  displayedItems: ListItem[]
+  filteredItems: ListItem[]
 }) {
   useInput((input, key) => {
     if (searchable) {
       if (key.backspace || key.delete) {
         setQuery((q) => q.slice(0, -1))
         setSelectedIndex(0)
+        setViewportStart(0)
       } else if (input && !key.ctrl && !key.meta && input.length === 1 && input.match(/[a-zA-Z0-9 -]/)) {
         setQuery((q) => q + input)
         setSelectedIndex(0)
+        setViewportStart(0)
       }
     }
 
     if (key.upArrow) {
       setSelectedIndex((i) => Math.max(0, i - 1))
     } else if (key.downArrow) {
-      setSelectedIndex((i) => Math.min(displayedItemsLength - 1, i + 1))
-    } else if (key.return && onSelect && displayedItems[selectedIndex]) {
-      onSelect(displayedItems[selectedIndex])
-    } else if (input === 'm' && hasMore) {
-      setShowAll(true)
+      setSelectedIndex((i) => Math.min(totalItemsLength - 1, i + 1))
+    } else if (key.return && onSelect && filteredItems[selectedIndex]) {
+      onSelect(filteredItems[selectedIndex])
     }
   })
 
@@ -112,7 +110,7 @@ function KeyboardHandler({
 }
 
 /**
- * Interactive searchable list with keyboard navigation
+ * Interactive searchable list with keyboard navigation and sliding window
  * Falls back to static list when running non-interactively
  */
 export function SearchableList({
@@ -123,14 +121,14 @@ export function SearchableList({
   popularIds = [],
   onSelect,
   searchable = true,
-  maxDisplay = 15,
+  maxDisplay = 10,
 }: SearchableListProps) {
   const { isRawModeSupported } = useStdin()
   const isInteractive = isRawModeSupported
 
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const [showAll, setShowAll] = useState(false)
+  const [viewportStart, setViewportStart] = useState(0)
 
   // Filter and sort items
   const filteredItems = useMemo(() => {
@@ -148,13 +146,27 @@ export function SearchableList({
     return sortItems(result, popularIds)
   }, [items, query, popularIds])
 
-  // Paginate
-  const displayLimit = showAll ? filteredItems.length : Math.min(maxDisplay, filteredItems.length)
-  const displayedItems = filteredItems.slice(0, displayLimit)
-  const hasMore = filteredItems.length > displayLimit
+  // Calculate viewport size - sliding window that follows the cursor
+  const viewportSize = Math.min(maxDisplay, filteredItems.length)
+
+  // Adjust viewport when selected index moves outside the visible window
+  useEffect(() => {
+    if (selectedIndex < viewportStart) {
+      setViewportStart(selectedIndex)
+    } else if (selectedIndex >= viewportStart + viewportSize) {
+      setViewportStart(Math.max(0, selectedIndex - viewportSize + 1))
+    }
+  }, [selectedIndex, viewportStart, viewportSize])
+
+  // Get visible items based on viewport
+  const displayedItems = filteredItems.slice(viewportStart, viewportStart + viewportSize)
+  const hasMoreAbove = viewportStart > 0
+  const hasMoreBelow = viewportStart + viewportSize < filteredItems.length
 
   // Keep selected index in bounds
-  const safeIndex = Math.min(selectedIndex, Math.max(0, displayedItems.length - 1))
+  const safeIndex = Math.min(selectedIndex, Math.max(0, filteredItems.length - 1))
+  // Convert global index to viewport-relative index for display
+  const viewportSelectedIndex = safeIndex - viewportStart
 
   return (
     <Box flexDirection="column">
@@ -162,18 +174,17 @@ export function SearchableList({
       {isInteractive && (
         <KeyboardHandler
           searchable={searchable}
-          displayedItemsLength={displayedItems.length}
+          totalItemsLength={filteredItems.length}
           selectedIndex={selectedIndex}
           setSelectedIndex={setSelectedIndex}
           setQuery={setQuery}
-          setShowAll={setShowAll}
-          hasMore={hasMore}
+          setViewportStart={setViewportStart}
           onSelect={onSelect}
-          displayedItems={displayedItems}
+          filteredItems={filteredItems}
         />
       )}
 
-      {/* Title */}
+      {/* Title with count */}
       {title && (
         <Box marginBottom={1}>
           <Text color={theme.secondary}>
@@ -199,10 +210,18 @@ export function SearchableList({
         </Box>
       )}
 
-      {/* List items */}
+      {/* Scroll indicator - above */}
+      {hasMoreAbove && isInteractive && (
+        <Box>
+          <Text color={theme.accent}>  ▲</Text>
+          <Text color={theme.muted} dimColor> {viewportStart} more above</Text>
+        </Box>
+      )}
+
+      {/* List items - sliding window viewport */}
       <Box flexDirection="column">
         {displayedItems.map((item, index) => {
-          const isSelected = isInteractive && index === safeIndex
+          const isSelected = isInteractive && index === viewportSelectedIndex
           const isPopular = popularIds.includes(item.id)
 
           return (
@@ -252,29 +271,22 @@ export function SearchableList({
             </Text>
           </Box>
         )}
-
-        {/* Show more hint */}
-        {hasMore && !showAll && (
-          <Box marginTop={1}>
-            <Text color={theme.muted} dimColor>
-              +{filteredItems.length - displayLimit} more
-              {isInteractive && ' — press '}
-            </Text>
-            {isInteractive && (
-              <>
-                <Text color={theme.accent}>m</Text>
-                <Text color={theme.muted} dimColor> to show all</Text>
-              </>
-            )}
-          </Box>
-        )}
       </Box>
 
-      {/* Help text - only show in interactive mode */}
+      {/* Scroll indicator - below */}
+      {hasMoreBelow && isInteractive && (
+        <Box>
+          <Text color={theme.accent}>  ▼</Text>
+          <Text color={theme.muted} dimColor> {filteredItems.length - viewportStart - viewportSize} more below</Text>
+        </Box>
+      )}
+
+      {/* Help text with position indicator - only show in interactive mode */}
       {isInteractive && (
         <Box marginTop={1}>
           <Text color={theme.muted} dimColor>
-            ↑↓ navigate{onSelect ? ' • Enter select' : ''}{searchable ? ' • Type to filter' : ''}
+            ↑↓ scroll{onSelect ? ' • Enter select' : ''}{searchable ? ' • Type to filter' : ''}
+            {filteredItems.length > viewportSize && ` • ${safeIndex + 1}/${filteredItems.length}`}
           </Text>
         </Box>
       )}

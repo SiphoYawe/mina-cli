@@ -130,22 +130,26 @@ export interface ChainSelectItem extends SelectItem<number> {
 }
 
 /**
- * Pre-configured chain selector
+ * Pre-configured chain selector with scrolling
  */
 export function ChainSelect({
   chains,
   onSelect,
   label = 'Select Chain:',
+  limit = 8,
 }: {
   chains: ChainSelectItem[]
   onSelect: (chain: ChainSelectItem) => void
   label?: string
+  /** Max visible items before scrolling (default: 8) */
+  limit?: number
 }) {
   return (
     <Select<number>
       items={chains}
       onSelect={(item) => onSelect(item as ChainSelectItem)}
       label={label}
+      limit={limit}
     />
   )
 }
@@ -156,22 +160,26 @@ export interface TokenSelectItem extends SelectItem<string> {
 }
 
 /**
- * Pre-configured token selector
+ * Pre-configured token selector with scrolling
  */
 export function TokenSelect({
   tokens,
   onSelect,
   label = 'Select Token:',
+  limit = 10,
 }: {
   tokens: TokenSelectItem[]
   onSelect: (token: TokenSelectItem) => void
   label?: string
+  /** Max visible items before scrolling (default: 10) */
+  limit?: number
 }) {
   return (
     <Select<string>
       items={tokens}
       onSelect={(item) => onSelect(item as TokenSelectItem)}
       label={label}
+      limit={limit}
     />
   )
 }
