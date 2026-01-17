@@ -1,21 +1,30 @@
-# @siphoyawe/mina-cli
+<p align="center">
+  <img src="mina-cli-logo.svg" alt="Mina CLI" width="400" />
+</p>
 
-Terminal-based cross-chain bridge to Hyperliquid. Bridge assets from any chain directly from your command line.
+<h1 align="center">@siphoyawe/mina-cli</h1>
 
-[![npm version](https://img.shields.io/npm/v/@siphoyawe/mina-cli.svg)](https://www.npmjs.com/package/@siphoyawe/mina-cli)
-[![npm downloads](https://img.shields.io/npm/dm/@siphoyawe/mina-cli.svg)](https://www.npmjs.com/package/@siphoyawe/mina-cli)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <strong>Terminal-based cross-chain bridge to Hyperliquid</strong>
+</p>
 
-```
-  __  __ ___ _   _    _
- |  \/  |_ _| \ | |  / \
- | |\/| || ||  \| | / _ \
- | |  | || || |\  |/ ___ \
- |_|  |_|___|_| \_/_/   \_\
+<p align="center">
+  Bridge assets from any chain directly from your command line
+</p>
 
- Cross-chain bridge to Hyperliquid
-```
+<p align="center">
+  <a href="https://www.npmjs.com/package/@siphoyawe/mina-cli">
+    <img src="https://img.shields.io/npm/v/@siphoyawe/mina-cli.svg" alt="npm version" />
+  </a>
+  <a href="https://www.typescriptlang.org/">
+    <img src="https://img.shields.io/badge/TypeScript-Ready-blue.svg" alt="TypeScript" />
+  </a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" />
+  </a>
+</p>
+
+---
 
 ## Features
 
