@@ -7,12 +7,27 @@ import {
 } from '@siphoyawe/mina-sdk'
 import {
   Header,
-  Table,
+  SearchableList,
   Spinner,
   theme,
   symbols,
-  type Column,
+  type ListItem,
 } from '../ui/index.js'
+
+/**
+ * Popular chains to highlight (by chain ID)
+ * These appear first and get a star indicator
+ */
+const POPULAR_CHAIN_IDS = [
+  1,      // Ethereum
+  42161,  // Arbitrum
+  10,     // Optimism
+  137,    // Polygon
+  8453,   // Base
+  43114,  // Avalanche
+  56,     // BNB Chain
+  999,    // HyperEVM (destination)
+]
 
 /**
  * Chain display row type
@@ -24,7 +39,7 @@ interface ChainRow {
 }
 
 /**
- * Chains command component - displays supported chains table
+ * Chains command component - displays supported chains with interactive search
  */
 export function ChainsCommand({ json = false }: { json?: boolean }) {
   const { exit } = useApp()
@@ -48,7 +63,6 @@ export function ChainsCommand({ json = false }: { json?: boolean }) {
         }))
 
         // Add HyperEVM as destination
-        // Check if HyperEVM already exists in the list
         const hasHyperEvm = chainRows.some(c => c.id === HYPEREVM_CHAIN_ID)
         if (!hasHyperEvm) {
           chainRows.push({
@@ -57,20 +71,11 @@ export function ChainsCommand({ json = false }: { json?: boolean }) {
             type: 'Dest',
           })
         } else {
-          // Mark existing HyperEVM as destination
           const hyperEvmChain = chainRows.find(c => c.id === HYPEREVM_CHAIN_ID)
           if (hyperEvmChain) {
             hyperEvmChain.type = 'Dest'
           }
         }
-
-        // Sort: Origin chains first (alphabetically), then Dest
-        chainRows.sort((a, b) => {
-          if (a.type !== b.type) {
-            return a.type === 'Origin' ? -1 : 1
-          }
-          return a.name.localeCompare(b.name)
-        })
 
         setChains(chainRows)
       } catch (err) {
@@ -120,50 +125,31 @@ export function ChainsCommand({ json = false }: { json?: boolean }) {
     )
   }
 
-  // Define table columns
-  const columns: Column<ChainRow>[] = [
-    {
-      header: 'Chain',
-      accessor: 'name',
-      headerColor: theme.primary,
-      cellColor: theme.secondary,
-    },
-    {
-      header: 'ID',
-      accessor: (row) => String(row.id),
-      align: 'right',
-      headerColor: theme.primary,
-      cellColor: theme.muted,
-    },
-    {
-      header: 'Type',
-      accessor: 'type',
-      headerColor: theme.primary,
-      cellColor: (value) =>
-        value === 'Origin' ? theme.success : theme.accent,
-    },
-  ]
+  // Convert to ListItem format
+  const listItems: ListItem[] = chains.map((chain) => ({
+    id: chain.id,
+    label: chain.name,
+    sublabel: `ID: ${chain.id}`,
+    badge: chain.type,
+    badgeColor: chain.type === 'Origin' ? theme.success : theme.accent,
+  }))
 
   return (
     <Box flexDirection="column" padding={1}>
       <Header compact showTagline={false} />
 
-      <Box marginBottom={1}>
-        <Text color={theme.secondary}>
-          {symbols.arrow} Supported Chains ({chains.length})
-        </Text>
-      </Box>
-
-      <Table
-        data={chains}
-        columns={columns}
-        bordered
-        borderColor={theme.border}
+      <SearchableList
+        items={listItems}
+        title="Supported Chains"
+        placeholder="Type to filter chains..."
+        popularIds={POPULAR_CHAIN_IDS}
+        maxDisplay={12}
+        searchable={true}
       />
 
       <Box marginTop={1}>
         <Text color={theme.muted} dimColor>
-          Origin = Source chains for bridging | Dest = Destination chain
+          ★ = Popular chains • Origin = Source for bridging • Dest = Destination
         </Text>
       </Box>
     </Box>

@@ -66,3 +66,11 @@ export {
   type Column,
   type TableProps,
 } from './Table.js'
+
+// Searchable list component
+export {
+  SearchableList,
+  CompactList,
+  type ListItem,
+  type SearchableListProps,
+} from './SearchableList.js'

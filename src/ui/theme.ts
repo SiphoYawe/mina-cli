@@ -66,6 +66,8 @@ export const symbols = {
   arrow: '›',
   check: '✔',
   cross: '✘',
+  search: '⌕',
+  star: '★',
 } as const
 
 /**

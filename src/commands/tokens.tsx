@@ -8,19 +8,38 @@ import {
 } from '@siphoyawe/mina-sdk'
 import {
   Header,
-  Table,
+  SearchableList,
   Spinner,
   theme,
   symbols,
-  type Column,
+  type ListItem,
 } from '../ui/index.js'
+
+/**
+ * Popular token symbols to highlight
+ * These appear first and get a star indicator
+ */
+const POPULAR_TOKEN_SYMBOLS = [
+  'USDC',
+  'USDT',
+  'ETH',
+  'WETH',
+  'WBTC',
+  'DAI',
+  'USDC.e',
+  'LINK',
+  'UNI',
+  'ARB',
+  'OP',
+  'MATIC',
+]
 
 /**
  * Truncate address for display
  */
 function truncateAddress(address: string): string {
   if (address.length <= 14) return address
-  return `${address.slice(0, 10)}...${address.slice(-4)}`
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
 /**
@@ -38,10 +57,11 @@ interface TokenRow {
  * Resolve chain name or ID to chain ID
  */
 async function resolveChainId(chainInput: string): Promise<{ chainId: number; chainName: string } | null> {
+  const response = await getChains()
+
   // Check if it's a numeric ID
   const numericId = parseInt(chainInput, 10)
   if (!isNaN(numericId)) {
-    const response = await getChains()
     const chain = response.chains.find((c: Chain) => c.id === numericId)
     if (chain) {
       return { chainId: chain.id, chainName: chain.name }
@@ -51,7 +71,6 @@ async function resolveChainId(chainInput: string): Promise<{ chainId: number; ch
   }
 
   // Otherwise treat as chain name/key
-  const response = await getChains()
   const chainLower = chainInput.toLowerCase()
   const chain = response.chains.find((c: Chain) =>
     c.name.toLowerCase() === chainLower ||
@@ -66,7 +85,7 @@ async function resolveChainId(chainInput: string): Promise<{ chainId: number; ch
 }
 
 /**
- * Tokens command component - displays bridgeable tokens table
+ * Tokens command component - displays bridgeable tokens with interactive search
  */
 export function TokensCommand({
   chain,
@@ -112,17 +131,16 @@ export function TokensCommand({
         // Fetch bridgeable tokens for the chain
         const response = await getBridgeableTokens(resolved.chainId)
 
-        // Map tokens to display format
-        const tokenRows: TokenRow[] = response.tokens.map((token: Token) => ({
-          symbol: token.symbol,
-          address: token.address,
-          displayAddress: truncateAddress(token.address),
-          decimals: token.decimals,
-          name: token.name,
-        }))
-
-        // Sort alphabetically by symbol
-        tokenRows.sort((a, b) => a.symbol.localeCompare(b.symbol))
+        // Map tokens to display format, filter out tokens without symbols
+        const tokenRows: TokenRow[] = response.tokens
+          .filter((token: Token) => token.symbol && token.symbol.trim() !== '')
+          .map((token: Token) => ({
+            symbol: token.symbol,
+            address: token.address,
+            displayAddress: truncateAddress(token.address),
+            decimals: token.decimals,
+            name: token.name,
+          }))
 
         setTokens(tokenRows)
       } catch (err) {
@@ -174,6 +192,12 @@ export function TokensCommand({
   }
 
   if (error) {
+    // Show top 6 popular chains as quick suggestions
+    const popularChainIds = [1, 42161, 10, 137, 8453, 43114]
+    const popularChains = availableChains
+      .filter(c => popularChainIds.includes(c.id))
+      .slice(0, 6)
+
     return (
       <Box flexDirection="column" padding={1}>
         <Header compact showTagline={false} />
@@ -184,25 +208,23 @@ export function TokensCommand({
         {availableChains.length > 0 && (
           <Box flexDirection="column">
             <Box marginBottom={1}>
-              <Text color={theme.secondary}>Available chains:</Text>
+              <Text color={theme.secondary}>Popular chains:</Text>
             </Box>
-            {availableChains.slice(0, 10).map((c, i) => (
-              <Box key={i}>
-                <Text color={theme.muted}>  {symbols.arrow} </Text>
-                <Text color={theme.primary}>{c.name}</Text>
-                <Text color={theme.muted}> (ID: {c.id})</Text>
-              </Box>
-            ))}
-            {availableChains.length > 10 && (
-              <Box marginTop={1}>
-                <Text color={theme.muted} dimColor>
-                  ...and {availableChains.length - 10} more. Use "mina chains" to see all.
-                </Text>
-              </Box>
-            )}
+            <Box flexDirection="row" gap={2} flexWrap="wrap">
+              {popularChains.map((c) => (
+                <Box key={c.id}>
+                  <Text color={theme.primary}>{c.name.toLowerCase()}</Text>
+                </Box>
+              ))}
+            </Box>
             <Box marginTop={1}>
               <Text color={theme.muted} dimColor>
                 Example: mina tokens --chain arbitrum
+              </Text>
+            </Box>
+            <Box marginTop={1}>
+              <Text color={theme.muted} dimColor>
+                Run "mina chains" to see all {availableChains.length} supported chains
               </Text>
             </Box>
           </Box>
@@ -224,29 +246,19 @@ export function TokensCommand({
     )
   }
 
-  // Define table columns
-  const columns: Column<TokenRow>[] = [
-    {
-      header: 'Symbol',
-      accessor: 'symbol',
-      headerColor: theme.primary,
-      cellColor: theme.success,
-    },
-    {
-      header: 'Address',
-      accessor: 'displayAddress',
-      headerColor: theme.primary,
-      cellColor: theme.muted,
-      width: 20,
-    },
-    {
-      header: 'Decimals',
-      accessor: (row) => String(row.decimals),
-      align: 'right',
-      headerColor: theme.primary,
-      cellColor: theme.secondary,
-    },
-  ]
+  // Convert to ListItem format
+  const listItems: ListItem[] = tokens.map((token) => ({
+    id: token.address,
+    label: token.symbol,
+    sublabel: token.displayAddress,
+    badge: `${token.decimals}d`,
+    badgeColor: theme.muted,
+  }))
+
+  // Get popular token IDs (addresses) for highlighting
+  const popularTokenIds = tokens
+    .filter(t => POPULAR_TOKEN_SYMBOLS.includes(t.symbol.toUpperCase()))
+    .map(t => t.address)
 
   return (
     <Box flexDirection="column" padding={1}>
@@ -259,19 +271,19 @@ export function TokensCommand({
         <Text color={theme.primary} bold>
           {chainName}
         </Text>
-        <Text color={theme.muted}> ({tokens.length})</Text>
       </Box>
 
-      <Table
-        data={tokens}
-        columns={columns}
-        bordered
-        borderColor={theme.border}
+      <SearchableList
+        items={listItems}
+        placeholder="Type to filter tokens (e.g. USDC, ETH)..."
+        popularIds={popularTokenIds}
+        maxDisplay={12}
+        searchable={true}
       />
 
       <Box marginTop={1}>
         <Text color={theme.muted} dimColor>
-          Tokens that can be bridged to Hyperliquid via Mina
+          ★ = Popular tokens • Tokens bridgeable to Hyperliquid via Mina
         </Text>
       </Box>
     </Box>

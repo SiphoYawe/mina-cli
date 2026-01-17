@@ -1,6 +1,6 @@
 {
-  "name": "mina-cli",
-  "version": "1.0.0",
+  "name": "@siphoyawe/mina-cli",
+  "version": "1.2.0",
   "description": "CLI tool for Mina Bridge - Bridge assets from any chain to Hyperliquid",
   "author": "Mina Bridge Contributors",
   "license": "MIT",
