@@ -114,13 +114,22 @@ export async function createSigner(
     8453: base,
     43114: avalanche,
     56: bsc,
-    // HyperEVM
+    // HyperEVM Mainnet
     999: {
       id: 999,
       name: 'HyperEVM',
-      nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+      nativeCurrency: { name: 'HYPE', symbol: 'HYPE', decimals: 18 },
       rpcUrls: {
         default: { http: ['https://rpc.hyperliquid.xyz/evm'] },
+      },
+    } as Chain,
+    // HyperEVM Testnet
+    998: {
+      id: 998,
+      name: 'HyperEVM Testnet',
+      nativeCurrency: { name: 'HYPE', symbol: 'HYPE', decimals: 18 },
+      rpcUrls: {
+        default: { http: ['https://rpc.hyperliquid-testnet.xyz/evm'] },
       },
     } as Chain,
   }
@@ -183,19 +192,29 @@ export async function checkGasBalance(
     8453: base,
     43114: avalanche,
     56: bsc,
+    // HyperEVM Mainnet
     999: {
       id: 999,
       name: 'HyperEVM',
-      nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+      nativeCurrency: { name: 'HYPE', symbol: 'HYPE', decimals: 18 },
       rpcUrls: {
         default: { http: ['https://rpc.hyperliquid.xyz/evm'] },
+      },
+    } as Chain,
+    // HyperEVM Testnet
+    998: {
+      id: 998,
+      name: 'HyperEVM Testnet',
+      nativeCurrency: { name: 'HYPE', symbol: 'HYPE', decimals: 18 },
+      rpcUrls: {
+        default: { http: ['https://rpc.hyperliquid-testnet.xyz/evm'] },
       },
     } as Chain,
   }
 
   const chain = chainMap[chainId]
   if (!chain) {
-    throw new Error(`Unsupported chain ID: ${chainId}`)
+    throw new Error(`Unsupported chain ID: ${chainId}. Supported: ${Object.keys(chainMap).join(', ')}`)
   }
 
   const client = createPublicClient({
