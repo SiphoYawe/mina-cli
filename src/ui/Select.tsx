@@ -47,8 +47,9 @@ export function Select<V = string>({
   label,
   limit,
 }: SelectProps<V>) {
-  // Transform items to ink-select-input format
-  const inkItems: InkItem<SelectItem<V>>[] = items.map((item) => ({
+  // Transform items to ink-select-input format with unique keys
+  const inkItems: InkItem<SelectItem<V>>[] = items.map((item, index) => ({
+    key: `${item.label}-${String(item.value)}-${index}`,
     label: item.label,
     value: item,
   }))
