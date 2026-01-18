@@ -44,12 +44,12 @@ export function Header({
 
   return (
     <Box flexDirection="column" marginBottom={1}>
-      {/* Logo with gradient-like effect */}
+      {/* Logo - solid blue, clean and bold */}
       <Box flexDirection="column">
-        {logo.split('\n').filter(line => line.length > 0).map((line, index, arr) => (
+        {logo.split('\n').filter(line => line.length > 0).map((line, index) => (
           <Text
             key={index}
-            color={index === 0 ? theme.primary : index === arr.length - 1 ? theme.accent : theme.primaryDim}
+            color={theme.primary}
             bold
           >
             {line}
@@ -57,14 +57,10 @@ export function Header({
         ))}
       </Box>
 
-      {/* Tagline with decorative elements - properly aligned */}
+      {/* Tagline - simple and clean */}
       {showTagline && (
-        <Box flexDirection="column" marginTop={1}>
-          <Box>
-            <Text color={theme.border}>{borders.roundTopLeft}{borders.heavyHorizontal}</Text>
-            <Text color={theme.muted}> {tagline} </Text>
-            <Text color={theme.border}>{borders.heavyHorizontal}{borders.roundTopRight}</Text>
-          </Box>
+        <Box marginTop={1}>
+          <Text color={theme.muted}>{tagline}</Text>
         </Box>
       )}
     </Box>

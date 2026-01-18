@@ -120,19 +120,17 @@ export const symbols = {
 
 /**
  * ASCII Art Logo for Mina Bridge
- * Geometric, modern design with proper alignment
+ * Geometric, modern design - solid blue
  */
-export const MINA_LOGO = `╔╦╗╦╔╗╔╔═╗
-║║║║║║║╠═╣
-╩ ╩╩╝╚╝╩ ╩`
-
-export const MINA_LOGO_LARGE = `
+export const MINA_LOGO = `
 ███╗   ███╗██╗███╗   ██╗ █████╗
 ████╗ ████║██║████╗  ██║██╔══██╗
 ██╔████╔██║██║██╔██╗ ██║███████║
 ██║╚██╔╝██║██║██║╚██╗██║██╔══██║
 ██║ ╚═╝ ██║██║██║ ╚████║██║  ██║
 ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝`
+
+export const MINA_LOGO_LARGE = MINA_LOGO
 
 export const TAGLINE = 'Cross-chain bridge to Hyperliquid'
 
