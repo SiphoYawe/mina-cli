@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./mina-cli-logo.svg" alt="Mina CLI" width="400" />
+</p>
+
 <h1 align="center">@siphoyawe/mina-cli</h1>
 
 <p align="center">
@@ -320,7 +324,7 @@ mina config set slippage 1.0
 ## Related Packages
 
 - [@siphoyawe/mina-sdk](https://www.npmjs.com/package/@siphoyawe/mina-sdk) - The underlying SDK with React hooks
-- [Mina Bridge Web App](https://github.com/siphoyawe/mina-sdk) - Web interface for bridging
+- [Mina Web App](https://www.usemina.co) - Web interface for bridging
 
 ## License
 
